@@ -1,10 +1,10 @@
-# REST Create and Retrieve Lab
+# REST CRUD Lab
 
 ## Learning Goals
 
 - Build RESTful APIs that are easy to navigate and use in applications.
 - Develop a Flask API with successful frontend connections via `fetch()`.
-- Integrate create and retrieve routes with the associated actions to return the
+- Integrate update and delete routes with the associated actions to return the
   appropriate JSON data.
 
 ---
@@ -34,164 +34,60 @@
 
 ## Introduction
 
-In this lab, we'll be building an API for a plant store! In addition to our
-usual Flask code, there is code for a React frontend application in the `client`
-directory.
-
-The code for the frontend application is done. Your job is to create the Flask
-API so that the `fetch` requests on the frontend work successfully.
-
----
+In this lab, we'll continue building an API for the plant store! The code for
+the frontend React application is done; you can find it in the `client`
+directory. Your job is to create the Flask API so that the `fetch` requests on
+the frontend work successfully.
 
 ## Instructions
 
-The React application is in the `client` directory. To set it up, from the root
-directory, run:
+To set up the frontend and backend dependencies, from the root directory, run:
 
 ```console
 $ npm install --prefix client
+$ pipenv install
+$ pipenv shell
 ```
 
-Using `--prefix client` will run the npm command within the `client` directory.
-
-To set up your backend, run:
+In `server/`, run:
 
 ```console
-$ pipenv install; pipenv shell
+$ flask db upgrade
+$ python seed.py
 ```
 
-Then navigate to the `server/` directory to run your Python code.
-
-First, you will need to set up your database. Go ahead and run the following
-command to create the `instance/app.db` database file:
+To see how the React application and Flask API are interacting, you can run the
+Flask application in one terminal by running:
 
 ```console
-$ flask db upgrade head
+$ python app.py
 ```
 
-To see how the React application and Flask API are interacting, first, you will
-need to set the default port number to match the proxy setup in the client's
-package.json. In this case, the port number is 5555.
-
-```console
-export FLASK_RUN_PORT=5555
-```
-
-Now you can run the Flask application in one terminal by running:
-
-```console
-$ flask run
-```
-
-Then, [open another terminal][new terminal] and run React:
+Then, **open another terminal** and run React:
 
 ```console
 $ npm start --prefix client
 ```
-
-[new terminal]:
-  https://code.visualstudio.com/docs/editor/integrated-terminal#_managing-terminals
 
 Each application will run on its own port on `localhost`:
 
 - React: [http://localhost:4000](http://localhost:4000)
 - Flask: [http://localhost:5555](http://localhost:5555)
 
-Take a look through the components in the `client/src/components/` folder to get
-a feel for what our app does. Note that the `fetch` requests in the frontend (in
-`NewPlantForm` and `PlantPage`) don't include the backend domain:
-
-```js
-fetch("/plants");
-// instead of fetch("http://localhost:5000/plants")
-```
-
-This is because we are [proxying][proxying] these requests to our Flask API.
-
----
-
 ## Deliverables
-
-### Model
-
-Edit the `Plant` model in `models.py` to match this specification:
-
-| Column Name | Data Type |
-| ----------- | --------- |
-| name        | string    |
-| image       | string    |
-| price       | decimal   |
-
-After defining the columns for the `Plant` model and saving the file, do the
-following to update and seed the plant table:
-
-1. Create a revision that tracks your changes to models.py
-
-```console
-$ flask db revision --autogenerate -m'add columns to table'
-```
-
-2. Upgrade the db to the latest revision
-
-```console
-$ flask db upgrade head
-```
-
-3. Seed the database
-
-```console
-$ python seed.py
-```
 
 ### Routes
 
 Your API should have the following routes as well as the associated controller
 actions that return the appropriate JSON data:
 
-#### Index Route
+#### Update Route
+
+Making a PATCH request to this route with an object in the body should update
+one plant, and return the updated plant in the response.
 
 ```txt
-GET /plants
-
-
-Response Body
--------
-[
-  {
-    "id": 1,
-    "name": "Aloe",
-    "image": "./images/aloe.jpg",
-    "price": 11.50
-  },
-  {
-    "id": 2,
-    "name": "ZZ Plant",
-    "image": "./images/zz-plant.jpg",
-    "price": 25.98
-  }
-]
-```
-
-#### Show Route
-
-```txt
-GET /plants/:id
-
-
-Response Body
-------
-{
-  "id": 1,
-  "name": "Aloe",
-  "image": "./images/aloe.jpg",
-  "price": 11.50
-}
-```
-
-#### Create Route
-
-```txt
-POST /plants
+PATCH /plants/:id
 
 
 Headers
@@ -202,9 +98,7 @@ Content-Type: application/json
 Request Body
 ------
 {
-  "name": "Aloe",
-  "image": "./images/aloe.jpg",
-  "price": 11.50
+  "is_in_stock": false
 }
 
 
@@ -214,20 +108,27 @@ Response Body
   "id": 1,
   "name": "Aloe",
   "image": "./images/aloe.jpg",
-  "price": 11.50
+  "price": 11.50,
+  "is_in_stock": false
 }
 ```
 
-> **Note 1: When adding image URLs, you will need to use absolute URLs from the
-> internet; we have only uploaded the two images to this project directory.**
+#### Destroy Route
 
-> **Note 2: Due to the structure of the client, you will need to use the
-> `get_json()` method to retrieve data for the create route. When you write your
-> own clients, you can decide whether data is passed to the backend via forms or
-> raw JSON.**
+Making a DELETE request to this route should delete one plant from the database.
+You should return a response of an empty string with the status code 204 (No
+Content) to indicate a successful deletion.
 
-Once all the tests are passing, start up the React app and explore the
-functionality to see how the routes you created are being used.
+```txt
+DELETE /plants/:id
+
+
+Response Body
+------
+no content
+```
+
+---
 
 ## Resources
 
@@ -237,5 +138,4 @@ functionality to see how the routes you created are being used.
 - [Proxying API Requests in Development - React][proxying]
 
 [frest]: https://flask-restful.readthedocs.io/en/latest/
-[proxying]:
-  https://create-react-app.dev/docs/proxying-api-requests-in-development/
+[proxying]: https://create-react-app.dev/docs/proxying-api-requests-in-development/
